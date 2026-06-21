@@ -1,0 +1,22 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from prometheus_slo_alert_lab.models import SloConfig
+
+
+def load_config(path: str | Path) -> SloConfig:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data: dict[str, Any] = yaml.safe_load(handle) or {}
+    return SloConfig.model_validate(data)
+
+
+def load_metrics(path: str | Path) -> list[dict[str, Any]]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data = yaml.safe_load(handle) or []
+    if not isinstance(data, list):
+        raise ValueError("metrics file must contain a list of metric windows")
+    return data

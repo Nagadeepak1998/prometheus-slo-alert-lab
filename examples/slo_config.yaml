@@ -1,0 +1,18 @@
+targets:
+  - service: checkout-api
+    slo: availability
+    objective: 99.9
+  - service: recommender-api
+    slo: availability
+    objective: 99.5
+policies:
+  - name: fast-page
+    severity: page
+    short_window: 5m
+    long_window: 1h
+    burn_rate_threshold: 14.4
+  - name: slow-ticket
+    severity: ticket
+    short_window: 30m
+    long_window: 6h
+    burn_rate_threshold: 6.0

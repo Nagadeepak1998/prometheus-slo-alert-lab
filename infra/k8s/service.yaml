@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-slo-alert-lab
+spec:
+  selector:
+    app: prometheus-slo-alert-lab
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000

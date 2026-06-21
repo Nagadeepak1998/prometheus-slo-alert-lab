@@ -1,0 +1,10 @@
+[
+  {"service": "checkout-api", "slo": "availability", "window": "5m", "total_events": 10000, "bad_events": 220},
+  {"service": "checkout-api", "slo": "availability", "window": "30m", "total_events": 60000, "bad_events": 720},
+  {"service": "checkout-api", "slo": "availability", "window": "1h", "total_events": 120000, "bad_events": 1900},
+  {"service": "checkout-api", "slo": "availability", "window": "6h", "total_events": 720000, "bad_events": 5000},
+  {"service": "recommender-api", "slo": "availability", "window": "5m", "total_events": 8000, "bad_events": 12},
+  {"service": "recommender-api", "slo": "availability", "window": "30m", "total_events": 48000, "bad_events": 80},
+  {"service": "recommender-api", "slo": "availability", "window": "1h", "total_events": 96000, "bad_events": 145},
+  {"service": "recommender-api", "slo": "availability", "window": "6h", "total_events": 576000, "bad_events": 1100}
+]
