@@ -20,3 +20,11 @@ def load_metrics(path: str | Path) -> list[dict[str, Any]]:
     if not isinstance(data, list):
         raise ValueError("metrics file must contain a list of metric windows")
     return data
+
+
+def load_scenario(path: str | Path) -> list[dict[str, Any]]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data = yaml.safe_load(handle) or []
+    if not isinstance(data, list):
+        raise ValueError("scenario file must contain a list of stages")
+    return data

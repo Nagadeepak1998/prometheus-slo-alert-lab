@@ -28,6 +28,7 @@ flowchart LR
 ## What It Demonstrates
 
 - Multi-window SLO burn-rate evaluation for incident response workflows
+- Incident scenario simulation across baseline, regression, and recovery stages
 - Deterministic page/ticket/ok routing suitable for CI and production support
 - FastAPI service with typed request and response schemas
 - Prometheus metrics for evaluation count and latency
@@ -62,8 +63,26 @@ The sample checkout service breaches the fast page policy. The command writes:
 For CI/CD gates, add `--fail-on-page` so page-worthy incidents exit with code `2`:
 
 ```bash
-slo-alert-lab evaluate --config examples/slo_config.yaml --metrics examples/window_metrics.json --fail-on-page
+PYTHONPATH=src python -m prometheus_slo_alert_lab.cli evaluate \
+  --config examples/slo_config.yaml \
+  --metrics examples/window_metrics.json \
+  --fail-on-page
 ```
+
+## Simulate an Incident Timeline
+
+```bash
+make simulate
+```
+
+The scenario fixture models a healthy baseline, a checkout deploy regression, and a
+rollback recovery stage. The command writes:
+
+- `reports/scenario/scenario_report.json`
+- `reports/scenario/scenario_report.md`
+
+Use this mode when an on-call handoff needs the first page-worthy stage, the worst
+burn rate, and the recommended incident action in one artifact.
 
 ## Run API Locally
 
@@ -79,6 +98,8 @@ curl -X POST http://localhost:8000/evaluate \
   -H "Content-Type: application/json" \
   -d @docs/sample_api_payload.json
 ```
+
+The API also exposes `POST /simulate` for staged incident timelines.
 
 Prometheus metrics:
 

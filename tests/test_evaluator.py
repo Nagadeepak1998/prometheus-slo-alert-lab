@@ -1,6 +1,8 @@
-from prometheus_slo_alert_lab.config import load_config, load_metrics
+from prometheus_slo_alert_lab.config import load_config, load_metrics, load_scenario
 from prometheus_slo_alert_lab.evaluator import evaluate_slos
 from prometheus_slo_alert_lab.models import Severity
+from prometheus_slo_alert_lab.reports import render_scenario_markdown
+from prometheus_slo_alert_lab.scenario import simulate_scenario
 
 
 def test_evaluator_pages_when_short_and_long_windows_breach():
@@ -29,3 +31,32 @@ def test_evaluator_stays_ok_for_healthy_metrics():
 
     assert report.decision == Severity.ok
     assert report.recommendations == ["No SLO policy breached. Keep monitoring current windows."]
+
+
+def test_scenario_simulation_identifies_first_page_stage():
+    config = load_config("examples/slo_config.yaml")
+
+    report = simulate_scenario(config, load_scenario("examples/incident_scenario.json"))
+
+    assert report.decision == Severity.page
+    assert [stage.name for stage in report.stages] == [
+        "baseline before deploy",
+        "checkout deploy regression",
+        "rollback recovery",
+    ]
+    assert report.stages[1].decision == Severity.page
+    assert report.stages[1].triggered_policies == 2
+    assert report.recommendations[0] == (
+        "First page-worthy stage is checkout deploy regression at +20 minutes."
+    )
+
+
+def test_scenario_markdown_is_incident_ready():
+    config = load_config("examples/slo_config.yaml")
+    report = simulate_scenario(config, load_scenario("examples/incident_scenario.json"))
+
+    markdown = render_scenario_markdown(report)
+
+    assert "# SLO Incident Scenario Report" in markdown
+    assert "| checkout deploy regression | +20m | page | 2 | 22.0 |" in markdown
+    assert "freeze risky releases" in markdown

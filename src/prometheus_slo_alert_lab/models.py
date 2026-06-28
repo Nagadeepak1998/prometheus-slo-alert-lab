@@ -79,3 +79,24 @@ class SloEvaluationReport(BaseModel):
     windows: list[WindowEvaluation]
     policies: list[PolicyEvaluation]
     recommendations: list[str]
+
+
+class ScenarioStage(BaseModel):
+    name: str
+    minutes_from_start: int = Field(ge=0)
+    metrics: list[dict]
+
+
+class ScenarioStageEvaluation(BaseModel):
+    name: str
+    minutes_from_start: int
+    decision: Severity
+    triggered_policies: int
+    max_burn_rate: float
+    recommendations: list[str]
+
+
+class ScenarioReport(BaseModel):
+    decision: Severity
+    stages: list[ScenarioStageEvaluation]
+    recommendations: list[str]
