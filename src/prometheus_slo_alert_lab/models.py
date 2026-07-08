@@ -100,3 +100,31 @@ class ScenarioReport(BaseModel):
     decision: Severity
     stages: list[ScenarioStageEvaluation]
     recommendations: list[str]
+
+
+class HistoryWindow(BaseModel):
+    name: str
+    deploy_ref: str
+    minutes_since_deploy: int = Field(ge=0)
+    metrics: list[dict]
+
+
+class HistoryWindowEvaluation(BaseModel):
+    name: str
+    deploy_ref: str
+    minutes_since_deploy: int
+    decision: Severity
+    triggered_policies: int
+    max_burn_rate: float
+    page_policy: str | None = None
+
+
+class HistoryReviewReport(BaseModel):
+    decision: Severity
+    windows_evaluated: int
+    page_windows: int
+    ticket_windows: int
+    worst_window: str | None
+    max_burn_rate: float
+    windows: list[HistoryWindowEvaluation]
+    recommendations: list[str]

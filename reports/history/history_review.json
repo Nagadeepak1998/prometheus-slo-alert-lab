@@ -1,0 +1,41 @@
+{
+  "decision": "page",
+  "windows_evaluated": 3,
+  "page_windows": 1,
+  "ticket_windows": 1,
+  "worst_window": "post-expansion incident review",
+  "max_burn_rate": 22.0,
+  "windows": [
+    {
+      "name": "baseline deploy verification",
+      "deploy_ref": "checkout-2026.07.08-1",
+      "minutes_since_deploy": 10,
+      "decision": "ok",
+      "triggered_policies": 0,
+      "max_burn_rate": 0.1,
+      "page_policy": null
+    },
+    {
+      "name": "canary expansion watch",
+      "deploy_ref": "checkout-2026.07.08-2",
+      "minutes_since_deploy": 25,
+      "decision": "ticket",
+      "triggered_policies": 1,
+      "max_burn_rate": 9.0,
+      "page_policy": null
+    },
+    {
+      "name": "post-expansion incident review",
+      "deploy_ref": "checkout-2026.07.08-3",
+      "minutes_since_deploy": 40,
+      "decision": "page",
+      "triggered_policies": 2,
+      "max_burn_rate": 22.0,
+      "page_policy": "fast-page"
+    }
+  ],
+  "recommendations": [
+    "First page-worthy history window is post-expansion incident review for deploy checkout-2026.07.08-3.",
+    "Block promotion until rollback, mitigation, or an explicit incident owner is recorded."
+  ]
+}

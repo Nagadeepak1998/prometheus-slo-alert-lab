@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from prometheus_slo_alert_lab.api import app
-from prometheus_slo_alert_lab.config import load_config, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
 
 
 def test_health_endpoint():
@@ -51,3 +51,19 @@ def test_simulate_endpoint_returns_page_scenario():
     assert body["recommendations"][0] == (
         "First page-worthy stage is checkout deploy regression at +20 minutes."
     )
+
+
+def test_history_endpoint_returns_page_review():
+    client = TestClient(app)
+    payload = {
+        "config": load_config("examples/slo_config.yaml").model_dump(mode="json"),
+        "windows": load_history("examples/deploy_history.json"),
+    }
+
+    response = client.post("/history", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["decision"] == "page"
+    assert body["page_windows"] == 1
+    assert body["worst_window"] == "post-expansion incident review"

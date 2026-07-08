@@ -3,9 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 
-from prometheus_slo_alert_lab.config import load_config, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
 from prometheus_slo_alert_lab.evaluator import evaluate_slos
-from prometheus_slo_alert_lab.reports import write_report, write_scenario_report
+from prometheus_slo_alert_lab.history import review_slo_history
+from prometheus_slo_alert_lab.reports import write_history_report, write_report, write_scenario_report
 from prometheus_slo_alert_lab.scenario import simulate_scenario
 
 
@@ -25,6 +26,12 @@ def main() -> int:
     simulate.add_argument("--out", default="reports/scenario")
     simulate.add_argument("--fail-on-page", action="store_true")
 
+    history = subparsers.add_parser("history")
+    history.add_argument("--config", required=True)
+    history.add_argument("--history", required=True)
+    history.add_argument("--out", default="reports/history")
+    history.add_argument("--fail-on-page", action="store_true")
+
     args = parser.parse_args()
     if args.command == "evaluate":
         config = load_config(args.config)
@@ -36,6 +43,12 @@ def main() -> int:
         config = load_config(args.config)
         report = simulate_scenario(config, load_scenario(args.scenario))
         write_scenario_report(report, args.out)
+        print(json.dumps(report.model_dump(mode="json"), indent=2))
+        return 2 if args.fail_on_page and report.decision.value == "page" else 0
+    if args.command == "history":
+        config = load_config(args.config)
+        report = review_slo_history(config, load_history(args.history))
+        write_history_report(report, args.out)
         print(json.dumps(report.model_dump(mode="json"), indent=2))
         return 2 if args.fail_on_page and report.decision.value == "page" else 0
     return 1

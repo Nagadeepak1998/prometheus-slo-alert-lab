@@ -1,7 +1,8 @@
-from prometheus_slo_alert_lab.config import load_config, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
 from prometheus_slo_alert_lab.evaluator import evaluate_slos
+from prometheus_slo_alert_lab.history import review_slo_history
 from prometheus_slo_alert_lab.models import Severity
-from prometheus_slo_alert_lab.reports import render_scenario_markdown
+from prometheus_slo_alert_lab.reports import render_history_markdown, render_scenario_markdown
 from prometheus_slo_alert_lab.scenario import simulate_scenario
 
 
@@ -60,3 +61,30 @@ def test_scenario_markdown_is_incident_ready():
     assert "# SLO Incident Scenario Report" in markdown
     assert "| checkout deploy regression | +20m | page | 2 | 22.0 |" in markdown
     assert "freeze risky releases" in markdown
+
+
+def test_history_review_identifies_first_page_window():
+    config = load_config("examples/slo_config.yaml")
+
+    report = review_slo_history(config, load_history("examples/deploy_history.json"))
+
+    assert report.decision == Severity.page
+    assert report.windows_evaluated == 3
+    assert report.page_windows == 1
+    assert report.ticket_windows == 1
+    assert report.worst_window == "post-expansion incident review"
+    assert report.recommendations[0] == (
+        "First page-worthy history window is post-expansion incident review "
+        "for deploy checkout-2026.07.08-3."
+    )
+
+
+def test_history_markdown_is_release_review_ready():
+    config = load_config("examples/slo_config.yaml")
+    report = review_slo_history(config, load_history("examples/deploy_history.json"))
+
+    markdown = render_history_markdown(report)
+
+    assert "# SLO History Review" in markdown
+    assert "| post-expansion incident review | checkout-2026.07.08-3 | 40 | page | 2 | 22.0 | fast-page |" in markdown
+    assert "Block promotion until rollback" in markdown

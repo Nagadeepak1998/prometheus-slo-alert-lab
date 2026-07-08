@@ -29,6 +29,7 @@ flowchart LR
 
 - Multi-window SLO burn-rate evaluation for incident response workflows
 - Incident scenario simulation across baseline, regression, and recovery stages
+- Deploy-history review that flags ticket/page windows after a rollout
 - Deterministic page/ticket/ok routing suitable for CI and production support
 - FastAPI service with typed request and response schemas
 - Prometheus metrics for evaluation count and latency
@@ -63,7 +64,7 @@ The sample checkout service breaches the fast page policy. The command writes:
 For CI/CD gates, add `--fail-on-page` so page-worthy incidents exit with code `2`:
 
 ```bash
-PYTHONPATH=src python -m prometheus_slo_alert_lab.cli evaluate \
+PYTHONPATH=src .venv/bin/python -m prometheus_slo_alert_lab.cli evaluate \
   --config examples/slo_config.yaml \
   --metrics examples/window_metrics.json \
   --fail-on-page
@@ -100,6 +101,23 @@ curl -X POST http://localhost:8000/evaluate \
 ```
 
 The API also exposes `POST /simulate` for staged incident timelines.
+
+## Review Deploy History
+
+```bash
+make history
+```
+
+The history fixture models three post-deploy windows: healthy verification, canary
+watch, and an incident review window. The command writes:
+
+- `reports/history/history_review.json`
+- `reports/history/history_review.md`
+
+Use this mode when a release owner needs reviewer-readable evidence for whether an
+SLO breach should block promotion or trigger rollback.
+
+The API also exposes `POST /history` for the same review path.
 
 Prometheus metrics:
 

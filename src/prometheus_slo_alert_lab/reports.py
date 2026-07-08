@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from prometheus_slo_alert_lab.models import ScenarioReport, SloEvaluationReport
+from prometheus_slo_alert_lab.models import HistoryReviewReport, ScenarioReport, SloEvaluationReport
 
 
 def write_report(report: SloEvaluationReport, output_dir: str | Path) -> None:
@@ -24,6 +24,16 @@ def write_scenario_report(report: ScenarioReport, output_dir: str | Path) -> Non
         encoding="utf-8",
     )
     (path / "scenario_report.md").write_text(render_scenario_markdown(report), encoding="utf-8")
+
+
+def write_history_report(report: HistoryReviewReport, output_dir: str | Path) -> None:
+    path = Path(output_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    (path / "history_review.json").write_text(
+        json.dumps(report.model_dump(mode="json"), indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (path / "history_review.md").write_text(render_history_markdown(report), encoding="utf-8")
 
 
 def render_markdown(report: SloEvaluationReport) -> str:
@@ -77,6 +87,50 @@ def render_scenario_markdown(report: ScenarioReport) -> str:
         lines.append("No scenario stages were evaluated.")
 
     lines.extend(["", "## Incident Handoff", ""])
+    lines.extend(f"- {item}" for item in report.recommendations)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_history_markdown(report: HistoryReviewReport) -> str:
+    lines = [
+        "# SLO History Review",
+        "",
+        f"Decision: **{report.decision.value.upper()}**",
+        "",
+        "## Release Windows",
+        "",
+    ]
+    if report.windows:
+        lines.append(
+            "| Window | Deploy | Minutes Since Deploy | Decision | Triggered Policies | Max Burn | Page Policy |"
+        )
+        lines.append("|---|---|---:|---|---:|---:|---|")
+        for window in report.windows:
+            lines.append(
+                "| "
+                f"{window.name} | {window.deploy_ref} | {window.minutes_since_deploy} | "
+                f"{window.decision.value} | {window.triggered_policies} | "
+                f"{window.max_burn_rate} | {window.page_policy or '-'} |"
+            )
+    else:
+        lines.append("No history windows were evaluated.")
+
+    lines.extend(
+        [
+            "",
+            "## Summary",
+            "",
+            f"- Windows evaluated: {report.windows_evaluated}",
+            f"- Page windows: {report.page_windows}",
+            f"- Ticket windows: {report.ticket_windows}",
+            f"- Worst window: {report.worst_window or '-'}",
+            f"- Max burn rate: {report.max_burn_rate}",
+            "",
+            "## Recommendations",
+            "",
+        ]
+    )
     lines.extend(f"- {item}" for item in report.recommendations)
     lines.append("")
     return "\n".join(lines)

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "baseline deploy verification",
+    "deploy_ref": "checkout-2026.07.08-1",
+    "minutes_since_deploy": 10,
+    "metrics": [
+      {"service": "checkout-api", "slo": "availability", "window": "5m", "total_events": 10000, "bad_events": 1},
+      {"service": "checkout-api", "slo": "availability", "window": "30m", "total_events": 60000, "bad_events": 4},
+      {"service": "checkout-api", "slo": "availability", "window": "1h", "total_events": 120000, "bad_events": 8},
+      {"service": "checkout-api", "slo": "availability", "window": "6h", "total_events": 720000, "bad_events": 40},
+      {"service": "recommender-api", "slo": "availability", "window": "5m", "total_events": 8000, "bad_events": 1},
+      {"service": "recommender-api", "slo": "availability", "window": "30m", "total_events": 48000, "bad_events": 4},
+      {"service": "recommender-api", "slo": "availability", "window": "1h", "total_events": 96000, "bad_events": 8},
+      {"service": "recommender-api", "slo": "availability", "window": "6h", "total_events": 576000, "bad_events": 40}
+    ]
+  },
+  {
+    "name": "canary expansion watch",
+    "deploy_ref": "checkout-2026.07.08-2",
+    "minutes_since_deploy": 25,
+    "metrics": [
+      {"service": "checkout-api", "slo": "availability", "window": "5m", "total_events": 10000, "bad_events": 90},
+      {"service": "checkout-api", "slo": "availability", "window": "30m", "total_events": 60000, "bad_events": 420},
+      {"service": "checkout-api", "slo": "availability", "window": "1h", "total_events": 120000, "bad_events": 850},
+      {"service": "checkout-api", "slo": "availability", "window": "6h", "total_events": 720000, "bad_events": 4700},
+      {"service": "recommender-api", "slo": "availability", "window": "5m", "total_events": 8000, "bad_events": 4},
+      {"service": "recommender-api", "slo": "availability", "window": "30m", "total_events": 48000, "bad_events": 20},
+      {"service": "recommender-api", "slo": "availability", "window": "1h", "total_events": 96000, "bad_events": 30},
+      {"service": "recommender-api", "slo": "availability", "window": "6h", "total_events": 576000, "bad_events": 120}
+    ]
+  },
+  {
+    "name": "post-expansion incident review",
+    "deploy_ref": "checkout-2026.07.08-3",
+    "minutes_since_deploy": 40,
+    "metrics": [
+      {"service": "checkout-api", "slo": "availability", "window": "5m", "total_events": 10000, "bad_events": 220},
+      {"service": "checkout-api", "slo": "availability", "window": "30m", "total_events": 60000, "bad_events": 720},
+      {"service": "checkout-api", "slo": "availability", "window": "1h", "total_events": 120000, "bad_events": 1900},
+      {"service": "checkout-api", "slo": "availability", "window": "6h", "total_events": 720000, "bad_events": 5000},
+      {"service": "recommender-api", "slo": "availability", "window": "5m", "total_events": 8000, "bad_events": 12},
+      {"service": "recommender-api", "slo": "availability", "window": "30m", "total_events": 48000, "bad_events": 80},
+      {"service": "recommender-api", "slo": "availability", "window": "1h", "total_events": 96000, "bad_events": 145},
+      {"service": "recommender-api", "slo": "availability", "window": "6h", "total_events": 576000, "bad_events": 1100}
+    ]
+  }
+]

@@ -28,3 +28,11 @@ def load_scenario(path: str | Path) -> list[dict[str, Any]]:
     if not isinstance(data, list):
         raise ValueError("scenario file must contain a list of stages")
     return data
+
+
+def load_history(path: str | Path) -> list[dict[str, Any]]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data = yaml.safe_load(handle) or []
+    if not isinstance(data, list):
+        raise ValueError("history file must contain a list of review windows")
+    return data
