@@ -13,7 +13,8 @@ and windowed good/bad event counts, computes burn rates, evaluates multi-window 
 policies, simulates staged incident timelines, and emits recruiter-readable incident
 reports. The latest addition reviews several post-deploy history windows so a release
 owner can see when an SLO breach moved from normal observation to ticket follow-up or
-page-worthy rollback review.
+page-worthy rollback review. The routing coverage gate then proves that every triggered
+alert has an accountable owner and an actionable incident path.
 
 ## Design Choices
 
@@ -24,6 +25,8 @@ page-worthy rollback review.
   incident handoff timeline.
 - **History review** summarizes deploy windows into an auditable release-readiness
   artifact.
+- **Routing coverage** joins triggered policies to owners, paging or ticket destinations,
+  runbooks, and escalation policies without sending a real alert.
 - **Prometheus metrics** make the evaluator observable when deployed as a service.
 - **Kubernetes and Terraform skeletons** show where the service would run in a platform
   environment without requiring cloud credentials for the demo.
@@ -38,6 +41,7 @@ page-worthy rollback review.
 6. The history reviewer compares post-deploy windows and names the first blocking
    release window.
 7. Operators use the Markdown reports as incident handoff artifacts.
+8. The route gate blocks automation when a triggered alert cannot reach an accountable team.
 
 ## Tradeoffs
 
@@ -55,6 +59,7 @@ page-worthy rollback review.
 - [x] Multi-window page and ticket policies
 - [x] Scenario simulation for staged incident review
 - [x] Deploy-history review for release evidence
+- [x] Alert ownership and route coverage gate
 - [x] JSON and Markdown reports
 - [x] Prometheus-compatible service metrics
 - [x] Unit and API tests
@@ -70,7 +75,7 @@ page-worthy rollback review.
 ## Next Improvements
 
 1. Add a Prometheus HTTP client mode that reads configured PromQL queries.
-2. Generate Alertmanager route snippets from the same policy config.
+2. Generate validated Alertmanager route snippets from the same route inventory.
 3. Add a Grafana dashboard for burn-rate trend review.
 4. Add signed review records for release-manager approval.
 5. Add OpenTelemetry traces around API evaluation calls.

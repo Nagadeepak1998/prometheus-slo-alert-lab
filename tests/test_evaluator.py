@@ -1,8 +1,19 @@
-from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import (
+    load_config,
+    load_history,
+    load_metrics,
+    load_routes,
+    load_scenario,
+)
 from prometheus_slo_alert_lab.evaluator import evaluate_slos
 from prometheus_slo_alert_lab.history import review_slo_history
 from prometheus_slo_alert_lab.models import Severity
-from prometheus_slo_alert_lab.reports import render_history_markdown, render_scenario_markdown
+from prometheus_slo_alert_lab.reports import (
+    render_history_markdown,
+    render_routing_markdown,
+    render_scenario_markdown,
+)
+from prometheus_slo_alert_lab.routing import review_alert_routing
 from prometheus_slo_alert_lab.scenario import simulate_scenario
 
 
@@ -88,3 +99,43 @@ def test_history_markdown_is_release_review_ready():
     assert "# SLO History Review" in markdown
     assert "| post-expansion incident review | checkout-2026.07.08-3 | 40 | page | 2 | 22.0 | fast-page |" in markdown
     assert "Block promotion until rollback" in markdown
+
+
+def test_routing_review_covers_triggered_alerts():
+    report = review_alert_routing(
+        load_config("examples/slo_config.yaml"),
+        load_metrics("examples/window_metrics.json"),
+        load_routes("examples/alert_routes.yaml"),
+    )
+
+    assert report.decision.value == "ready"
+    assert report.triggered_alerts == 2
+    assert report.covered_alerts == 2
+    assert report.coverage_percent == 100.0
+    assert report.alerts[0].owner == "checkout-platform"
+
+
+def test_routing_review_blocks_missing_page_escalation():
+    report = review_alert_routing(
+        load_config("examples/slo_config.yaml"),
+        load_metrics("examples/window_metrics.json"),
+        load_routes("examples/incomplete_alert_routes.yaml"),
+    )
+
+    assert report.decision.value == "blocked"
+    assert report.coverage_percent == 50.0
+    assert report.findings == ["checkout-api fast-page lacks routing fields: escalation_policy."]
+
+
+def test_routing_markdown_contains_incident_ownership_evidence():
+    report = review_alert_routing(
+        load_config("examples/slo_config.yaml"),
+        load_metrics("examples/window_metrics.json"),
+        load_routes("examples/alert_routes.yaml"),
+    )
+
+    markdown = render_routing_markdown(report)
+
+    assert "Coverage: **100.0%** (2/2)" in markdown
+    assert "pagerduty:checkout-primary" in markdown
+    assert "checkout-primary-to-platform-manager" in markdown

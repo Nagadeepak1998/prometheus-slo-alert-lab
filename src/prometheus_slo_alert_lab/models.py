@@ -128,3 +128,38 @@ class HistoryReviewReport(BaseModel):
     max_burn_rate: float
     windows: list[HistoryWindowEvaluation]
     recommendations: list[str]
+
+
+class AlertRoute(BaseModel):
+    service: str
+    owner: str | None = None
+    page_channel: str | None = None
+    ticket_queue: str | None = None
+    runbook_url: str | None = None
+    escalation_policy: str | None = None
+
+
+class RoutedAlert(BaseModel):
+    service: str
+    slo: str
+    policy: str
+    severity: Severity
+    owner: str | None
+    destination: str | None
+    runbook_url: str | None
+    escalation_policy: str | None
+    covered: bool
+
+
+class RoutingDecision(str, Enum):
+    ready = "ready"
+    blocked = "blocked"
+
+
+class RoutingReviewReport(BaseModel):
+    decision: RoutingDecision
+    triggered_alerts: int
+    covered_alerts: int
+    coverage_percent: float
+    alerts: list[RoutedAlert]
+    findings: list[str]

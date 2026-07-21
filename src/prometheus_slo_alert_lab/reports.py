@@ -3,7 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from prometheus_slo_alert_lab.models import HistoryReviewReport, ScenarioReport, SloEvaluationReport
+from prometheus_slo_alert_lab.models import (
+    HistoryReviewReport,
+    RoutingReviewReport,
+    ScenarioReport,
+    SloEvaluationReport,
+)
 
 
 def write_report(report: SloEvaluationReport, output_dir: str | Path) -> None:
@@ -34,6 +39,15 @@ def write_history_report(report: HistoryReviewReport, output_dir: str | Path) ->
         encoding="utf-8",
     )
     (path / "history_review.md").write_text(render_history_markdown(report), encoding="utf-8")
+
+
+def write_routing_report(report: RoutingReviewReport, output_dir: str | Path) -> None:
+    path = Path(output_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    (path / "routing_review.json").write_text(
+        json.dumps(report.model_dump(mode="json"), indent=2) + "\n", encoding="utf-8"
+    )
+    (path / "routing_review.md").write_text(render_routing_markdown(report), encoding="utf-8")
 
 
 def render_markdown(report: SloEvaluationReport) -> str:
@@ -132,5 +146,39 @@ def render_history_markdown(report: HistoryReviewReport) -> str:
         ]
     )
     lines.extend(f"- {item}" for item in report.recommendations)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_routing_markdown(report: RoutingReviewReport) -> str:
+    lines = [
+        "# Alert Routing Coverage Review",
+        "",
+        f"Decision: **{report.decision.value.upper()}**",
+        "",
+        f"Coverage: **{report.coverage_percent}%** ({report.covered_alerts}/{report.triggered_alerts})",
+        "",
+        "## Triggered Alert Evidence",
+        "",
+    ]
+    if report.alerts:
+        lines.extend(
+            [
+                "| Service | SLO | Policy | Severity | Owner | Destination | Runbook | Escalation | Covered |",
+                "|---|---|---|---|---|---|---|---|---|",
+            ]
+        )
+        for alert in report.alerts:
+            lines.append(
+                f"| {alert.service} | {alert.slo} | {alert.policy} | {alert.severity.value} | "
+                f"{alert.owner or '-'} | {alert.destination or '-'} | {alert.runbook_url or '-'} | "
+                f"{alert.escalation_policy or '-'} | {'yes' if alert.covered else 'no'} |"
+            )
+    else:
+        lines.append("No alert policies triggered.")
+    lines.extend(["", "## Findings", ""])
+    lines.extend(f"- {finding}" for finding in report.findings)
+    if not report.findings:
+        lines.append("- Every triggered alert has an accountable owner and actionable route.")
     lines.append("")
     return "\n".join(lines)

@@ -9,13 +9,16 @@ from prometheus_slo_alert_lab.evaluator import evaluate_slos
 from prometheus_slo_alert_lab.history import review_slo_history
 from prometheus_slo_alert_lab.models import (
     HistoryReviewReport,
+    AlertRoute,
+    RoutingReviewReport,
     ScenarioReport,
     SloConfig,
     SloEvaluationReport,
 )
 from prometheus_slo_alert_lab.scenario import simulate_scenario
+from prometheus_slo_alert_lab.routing import review_alert_routing
 
-app = FastAPI(title="Prometheus SLO Alert Lab", version="0.1.0")
+app = FastAPI(title="Prometheus SLO Alert Lab", version="0.2.0")
 
 evaluations_total = Counter(
     "slo_alert_lab_evaluations_total",
@@ -30,6 +33,11 @@ scenario_evaluations_total = Counter(
 history_reviews_total = Counter(
     "slo_alert_lab_history_reviews_total",
     "Total SLO history reviews by final decision.",
+    ["decision"],
+)
+routing_reviews_total = Counter(
+    "slo_alert_lab_routing_reviews_total",
+    "Total alert routing reviews by final decision.",
     ["decision"],
 )
 evaluation_latency = Histogram(
@@ -51,6 +59,12 @@ class ScenarioRequest(BaseModel):
 class HistoryRequest(BaseModel):
     config: SloConfig
     windows: list[dict]
+
+
+class RoutingRequest(BaseModel):
+    config: SloConfig
+    metrics: list[dict]
+    routes: list[AlertRoute]
 
 
 @app.get("/health")
@@ -79,6 +93,14 @@ def history(request: HistoryRequest) -> HistoryReviewReport:
     with evaluation_latency.time():
         report = review_slo_history(request.config, request.windows)
     history_reviews_total.labels(decision=report.decision.value).inc()
+    return report
+
+
+@app.post("/routing/review", response_model=RoutingReviewReport)
+def routing_review(request: RoutingRequest) -> RoutingReviewReport:
+    with evaluation_latency.time():
+        report = review_alert_routing(request.config, request.metrics, request.routes)
+    routing_reviews_total.labels(decision=report.decision.value).inc()
     return report
 
 

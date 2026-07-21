@@ -1,0 +1,12 @@
+- service: checkout-api
+  owner: checkout-platform
+  page_channel: pagerduty:checkout-primary
+  ticket_queue: jira:SRE-CHECKOUT
+  runbook_url: https://runbooks.example.invalid/checkout/availability
+  escalation_policy: checkout-primary-to-platform-manager
+- service: recommender-api
+  owner: ml-platform
+  page_channel: pagerduty:ml-platform-primary
+  ticket_queue: jira:MLPLAT
+  runbook_url: https://runbooks.example.invalid/recommender/availability
+  escalation_policy: ml-platform-primary-to-manager
