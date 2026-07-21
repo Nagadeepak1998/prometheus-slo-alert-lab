@@ -1,7 +1,13 @@
 from fastapi.testclient import TestClient
 
 from prometheus_slo_alert_lab.api import app
-from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import (
+    load_config,
+    load_history,
+    load_metrics,
+    load_routes,
+    load_scenario,
+)
 
 
 def test_health_endpoint():
@@ -67,3 +73,20 @@ def test_history_endpoint_returns_page_review():
     assert body["decision"] == "page"
     assert body["page_windows"] == 1
     assert body["worst_window"] == "post-expansion incident review"
+
+
+def test_routing_endpoint_returns_ready_coverage_review():
+    client = TestClient(app)
+    payload = {
+        "config": load_config("examples/slo_config.yaml").model_dump(mode="json"),
+        "metrics": load_metrics("examples/window_metrics.json"),
+        "routes": [
+            route.model_dump(mode="json") for route in load_routes("examples/alert_routes.yaml")
+        ],
+    }
+
+    response = client.post("/routing/review", json=payload)
+
+    assert response.status_code == 200
+    assert response.json()["decision"] == "ready"
+    assert response.json()["coverage_percent"] == 100.0

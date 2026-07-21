@@ -54,8 +54,7 @@ def evaluate_slos(config: SloConfig, raw_metrics: list[dict]) -> SloEvaluationRe
             short_burn = window_burn_rates.get(short_key, 0.0)
             long_burn = window_burn_rates.get(long_key, 0.0)
             triggered = (
-                short_burn >= policy.burn_rate_threshold
-                and long_burn >= policy.burn_rate_threshold
+                short_burn >= policy.burn_rate_threshold and long_burn >= policy.burn_rate_threshold
             )
             policy_results.append(
                 PolicyEvaluation(

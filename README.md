@@ -1,7 +1,8 @@
 # prometheus-slo-alert-lab
 
 Production-shaped SRE and platform engineering project for evaluating Prometheus-style
-SLO burn rates, routing alerts by severity, and producing incident-ready reports.
+SLO burn rates, validating alert ownership and routing coverage, and producing
+incident-ready reports.
 
 ## Business Problem
 
@@ -19,6 +20,7 @@ flowchart LR
     C --> D[CLI gate]
     C --> E[FastAPI /evaluate]
     C --> F[Markdown and JSON reports]
+    C --> K[Ownership and route coverage gate]
     E --> G[Prometheus /metrics]
     E --> H[Docker image]
     H --> I[Kubernetes manifests]
@@ -30,6 +32,7 @@ flowchart LR
 - Multi-window SLO burn-rate evaluation for incident response workflows
 - Incident scenario simulation across baseline, regression, and recovery stages
 - Deploy-history review that flags ticket/page windows after a rollout
+- Alert-route coverage for owners, paging destinations, runbooks, and escalation policies
 - Deterministic page/ticket/ok routing suitable for CI and production support
 - FastAPI service with typed request and response schemas
 - Prometheus metrics for evaluation count and latency
@@ -119,6 +122,26 @@ SLO breach should block promotion or trigger rollback.
 
 The API also exposes `POST /history` for the same review path.
 
+## Validate Alert Ownership and Routes
+
+```bash
+make routing-review
+make routing-review-blocked
+```
+
+This joins the triggered burn-rate policies with `examples/alert_routes.yaml` and
+produces auditable incident ownership evidence at:
+
+- `reports/routing/routing_review.json`
+- `reports/routing/routing_review.md`
+
+A page is covered only when it has an owner, paging destination, runbook, and escalation
+policy. Ticket alerts require an owner, queue, and runbook. `--fail-on-block` exits with
+code `2` when any triggered alert is not actionable. The API exposes the same contract at
+`POST /routing/review`, while `/metrics` records reviews by decision.
+The blocked example intentionally omits the page escalation policy and verifies that exit
+code `2` is treated as the expected gate result.
+
 Prometheus metrics:
 
 ```bash
@@ -181,6 +204,7 @@ git push
 
 - This lab uses precomputed window metrics rather than querying a live Prometheus server.
 - Alert policies are deterministic examples, not a replacement for service-specific review.
+- Route destinations use non-resolving example values; this project does not contact paging systems.
 - Terraform is a deployment skeleton, not a complete production network stack.
 
 ## What This Project Proves

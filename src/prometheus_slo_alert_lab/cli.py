@@ -3,10 +3,22 @@ from __future__ import annotations
 import argparse
 import json
 
-from prometheus_slo_alert_lab.config import load_config, load_history, load_metrics, load_scenario
+from prometheus_slo_alert_lab.config import (
+    load_config,
+    load_history,
+    load_metrics,
+    load_routes,
+    load_scenario,
+)
 from prometheus_slo_alert_lab.evaluator import evaluate_slos
 from prometheus_slo_alert_lab.history import review_slo_history
-from prometheus_slo_alert_lab.reports import write_history_report, write_report, write_scenario_report
+from prometheus_slo_alert_lab.reports import (
+    write_history_report,
+    write_report,
+    write_routing_report,
+    write_scenario_report,
+)
+from prometheus_slo_alert_lab.routing import review_alert_routing
 from prometheus_slo_alert_lab.scenario import simulate_scenario
 
 
@@ -32,6 +44,13 @@ def main() -> int:
     history.add_argument("--out", default="reports/history")
     history.add_argument("--fail-on-page", action="store_true")
 
+    routing = subparsers.add_parser("routing-review")
+    routing.add_argument("--config", required=True)
+    routing.add_argument("--metrics", required=True)
+    routing.add_argument("--routes", required=True)
+    routing.add_argument("--out", default="reports/routing")
+    routing.add_argument("--fail-on-block", action="store_true")
+
     args = parser.parse_args()
     if args.command == "evaluate":
         config = load_config(args.config)
@@ -51,6 +70,13 @@ def main() -> int:
         write_history_report(report, args.out)
         print(json.dumps(report.model_dump(mode="json"), indent=2))
         return 2 if args.fail_on_page and report.decision.value == "page" else 0
+    if args.command == "routing-review":
+        report = review_alert_routing(
+            load_config(args.config), load_metrics(args.metrics), load_routes(args.routes)
+        )
+        write_routing_report(report, args.out)
+        print(json.dumps(report.model_dump(mode="json"), indent=2))
+        return 2 if args.fail_on_block and report.decision.value == "blocked" else 0
     return 1
 
 

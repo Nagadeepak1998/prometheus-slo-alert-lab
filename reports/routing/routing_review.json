@@ -1,0 +1,31 @@
+{
+  "decision": "ready",
+  "triggered_alerts": 2,
+  "covered_alerts": 2,
+  "coverage_percent": 100.0,
+  "alerts": [
+    {
+      "service": "checkout-api",
+      "slo": "availability",
+      "policy": "fast-page",
+      "severity": "page",
+      "owner": "checkout-platform",
+      "destination": "pagerduty:checkout-primary",
+      "runbook_url": "https://runbooks.example.invalid/checkout/availability",
+      "escalation_policy": "checkout-primary-to-platform-manager",
+      "covered": true
+    },
+    {
+      "service": "checkout-api",
+      "slo": "availability",
+      "policy": "slow-ticket",
+      "severity": "ticket",
+      "owner": "checkout-platform",
+      "destination": "jira:SRE-CHECKOUT",
+      "runbook_url": "https://runbooks.example.invalid/checkout/availability",
+      "escalation_policy": "checkout-primary-to-platform-manager",
+      "covered": true
+    }
+  ],
+  "findings": []
+}

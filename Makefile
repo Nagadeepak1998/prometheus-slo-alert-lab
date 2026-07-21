@@ -1,4 +1,4 @@
-.PHONY: setup test lint evaluate simulate history run docker-build
+.PHONY: setup test lint evaluate simulate history routing-review routing-review-blocked run docker-build
 
 setup:
 	python3 -m venv .venv
@@ -18,6 +18,12 @@ simulate:
 
 history:
 	PYTHONPATH=src .venv/bin/python -m prometheus_slo_alert_lab.cli history --config examples/slo_config.yaml --history examples/deploy_history.json --out reports/history
+
+routing-review:
+	PYTHONPATH=src .venv/bin/python -m prometheus_slo_alert_lab.cli routing-review --config examples/slo_config.yaml --metrics examples/window_metrics.json --routes examples/alert_routes.yaml --out reports/routing --fail-on-block
+
+routing-review-blocked:
+	PYTHONPATH=src .venv/bin/python -m prometheus_slo_alert_lab.cli routing-review --config examples/slo_config.yaml --metrics examples/window_metrics.json --routes examples/incomplete_alert_routes.yaml --out reports/routing-blocked --fail-on-block; test $$? -eq 2
 
 run:
 	PYTHONPATH=src .venv/bin/uvicorn prometheus_slo_alert_lab.api:app --host 0.0.0.0 --port 8000
